@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Planner J">
+<meta name="theme-color" content="#f5ede2">
+<title>J人計劃</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23e8ddd0'/%3E%3Cellipse cx='50' cy='62' rx='34' ry='20' fill='%23d4c4b0' opacity='0.5'/%3E%3Cellipse cx='30' cy='52' rx='22' ry='14' fill='%23d4c4b0' opacity='0.4'/%3E%3Cellipse cx='68' cy='48' rx='18' ry='12' fill='%23d4c4b0' opacity='0.35'/%3E%3Ctext x='50' y='58' font-family='Georgia,serif' font-size='44' font-weight='bold' fill='%237a6652' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23e8ddd0'/%3E%3Cellipse cx='90' cy='112' rx='62' ry='36' fill='%23d4c4b0' opacity='0.5'/%3E%3Cellipse cx='54' cy='94' rx='40' ry='26' fill='%23d4c4b0' opacity='0.4'/%3E%3Cellipse cx='122' cy='86' rx='32' ry='22' fill='%23d4c4b0' opacity='0.35'/%3E%3Ctext x='90' y='106' font-family='Georgia,serif' font-size='80' font-weight='bold' fill='%237a6652' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+Thai:wght@400;500&family=Noto+Sans+JP:wght@400;500&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f5ede2;--latte:#e8ddd0;--latte2:#d4c4b0;
+  --brown:#7a6652;--brown2:#5c4d3c;
+  --s1:#faf6f0;--s2:#f0e8dc;--s3:#e8ddd0;
+  --bd:rgba(122,102,82,.15);--bd2:rgba(122,102,82,.25);
+  --acc:#c4815a;--grn:#6b9e7a;--blu:#5a85a8;--pnk:#c47a8a;--wrn:#c4915a;
+  --tx:#2a2118;--tx2:#7a6652;--tx3:#9a8878;
+  --r:18px;--rs:12px;
+  --sh:0 4px 20px rgba(122,102,82,.1);--shs:0 2px 8px rgba(122,102,82,.08);
+  --hand:'Gochi Hand',cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--tx);max-width:430px;margin:0 auto;padding-bottom:68px;overflow-x:hidden;font-size:16px;font-weight:400;-webkit-font-smoothing:antialiased;line-height:1.5}
+
+/* ── LOADER ── */
+#ld{position:fixed;inset:0;background:var(--cream);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:opacity .35s}
+#ld.hide{opacity:0;pointer-events:none}
+.ld-ic{width:76px;height:76px;background:var(--latte);border-radius:20px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh);animation:ldbop 1.1s ease infinite}
+@keyframes ldbop{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.ld-nm{font-family:var(--hand);font-size:26px;color:var(--brown)}
+.ld-sb{font-size:11px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase}
+.ld-bar{width:100px;height:2px;background:var(--latte2);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;width:0;background:var(--acc);transition:width 1.3s ease}
+
+/* ── NAV ── */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(245,237,226,.96);backdrop-filter:blur(18px);border-top:1px solid var(--bd2);display:flex;z-index:100;padding:5px 0 max(8px,env(safe-area-inset-bottom))}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;background:none;border:none;color:var(--tx3);cursor:pointer;font-size:10px;font-weight:600;font-family:inherit;transition:all .2s}
+.nb .ni{font-size:20px;transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
+.nb.on{color:var(--brown)}
+.nb.on .ni{transform:scale(1.2) translateY(-2px)}
+
+/* ── PAGES ── */
+.pg{display:none}
+.pg.on{display:block;animation:pgin .22s ease}
+@keyframes pgin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ── PAGE HERO (shared for all pages) ── */
+.phero{position:relative;overflow:hidden;min-height:130px;display:flex;flex-direction:column;justify-content:flex-end}
+.phero-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .4s}
+.phero-bg.on{opacity:1}
+.phero-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(245,237,226,.3) 0%,rgba(245,237,226,.75) 100%);display:none}
+.phero-bg.on~.phero-ov{display:block}
+.phero-cnt{position:relative;z-index:2;padding:10px 16px 14px}
+.phero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px}
+.phero-title{font-family:var(--hand);font-size:30px;color:var(--brown2);line-height:1.1}
+.phero-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.lang-sel{background:white;border:1px solid var(--bd2);border-radius:30px;color:var(--brown2);font-size:13px;font-weight:600;padding:6px 11px;font-family:inherit;cursor:pointer;outline:none;box-shadow:var(--shs)}
+.photo-btn{background:rgba(255,255,255,.82);border:1px solid var(--bd2);border-radius:20px;font-size:12px;font-weight:600;color:var(--brown);padding:5px 12px;cursor:pointer;backdrop-filter:blur(4px);white-space:nowrap;display:flex;align-items:center;gap:4px}
+
+/* ── HOME SPECIFIC HERO ── */
+.home-hero{background:linear-gradient(155deg,#ede0d2 0%,#f5ede2 70%)}
+.home-hero .phero-cnt{padding:44px 16px 14px}
+.hero-dest{font-family:var(--hand);font-size:34px;color:var(--brown2);line-height:1;margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.hero-lbl{font-size:11px;font-weight:600;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.hero-dates{font-size:12px;color:var(--tx3);margin-top:3px}
+
+/* stats */
+.stats{display:flex;gap:8px;margin-top:12px}
+.stat{flex:1;background:rgba(255,255,255,.88);border-radius:var(--rs);padding:10px 4px;text-align:center;box-shadow:var(--shs);border:1px solid var(--bd)}
+.stat-n{font-family:var(--hand);font-size:30px;color:var(--acc);line-height:1}
+.stat-u{font-size:12px;font-weight:700;color:var(--acc)}
+.stat-l{font-size:11px;font-weight:600;color:var(--tx3);margin-top:2px}
+
+/* weather */
+.wx-card{background:linear-gradient(135deg,#e5eef7,#d8e8f5);border-radius:var(--r);border:1px solid rgba(90,133,168,.2);padding:13px 15px;position:relative;overflow:hidden;box-shadow:var(--shs);cursor:pointer;margin:10px 16px 0;transition:opacity .2s}
+.wx-card:active{opacity:.85}
+.wx-emoji{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:44px;opacity:.4;pointer-events:none}
+.wx-loc{font-size:11px;font-weight:700;color:var(--blu);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.wx-temp{font-family:var(--hand);font-size:40px;color:var(--brown2);line-height:1}
+.wx-desc{font-size:13px;font-weight:600;color:var(--tx2);margin-top:3px}
+.wx-row{display:flex;gap:14px;margin-top:7px}
+.wx-st{font-size:11px;color:var(--tx2)}
+.wx-st b{color:var(--brown2);font-weight:700}
+.wx-hint{font-size:11px;font-weight:700;color:var(--blu);opacity:.7;letter-spacing:1px;text-transform:uppercase}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.wx-loading{font-size:13px;color:var(--blu);animation:pulse 1.5s infinite}
+
+/* warn */
+.warn{margin:10px 16px 0;background:rgba(196,145,90,.1);border:1px solid rgba(196,145,90,.25);border-radius:var(--rs);padding:10px 13px;font-size:13px;font-weight:500;color:var(--wrn);line-height:1.55}
+
+/* quick grid */
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 16px 0}
+.qc{border-radius:var(--rs);border:1px solid var(--bd);padding:12px 12px 32px;cursor:pointer;transition:all .18s;box-shadow:var(--shs);position:relative;overflow:hidden;background:white;min-height:86px}
+.qc:active{transform:scale(.96)}
+.qc-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .3s}
+.qc-bg.on{opacity:1}
+.qc-ov{position:absolute;inset:0;background:rgba(245,237,226,.68);display:none}
+.qc-bg.on~.qc-ov{display:block}
+.qc-in{position:relative;z-index:1}
+.qc-i{font-size:22px;margin-bottom:4px}
+.qc-l{font-size:15px;font-weight:700;color:var(--brown2)}
+.qc-s{font-size:11px;color:var(--tx3);margin-top:2px}
+.qc-cam{position:absolute;bottom:7px;right:8px;z-index:2;background:rgba(255,255,255,.8);border:1px solid var(--bd2);border-radius:16px;font-size:11px;font-weight:600;color:var(--brown);padding:3px 8px;cursor:pointer}
+
+/* ── ITINERARY ── */
+.dtabs{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;background:var(--cream);border-bottom:1px solid var(--bd);position:sticky;z-index:15}
+.dtabs::-webkit-scrollbar{display:none}
+.dtab{flex-shrink:0;background:white;border:1px solid var(--bd2);border-radius:30px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;color:var(--tx2);font-family:inherit;line-height:1.3;text-align:center;transition:all .2s}
+.dtab.on{background:var(--brown);border-color:var(--brown);color:white}
+.dayc{display:none;padding:14px 16px}
+.dayc.on{display:block}
+.tli{display:flex;gap:12px;margin-bottom:14px;position:relative}
+.tli:not(:last-child)::after{content:'';position:absolute;left:16px;top:38px;bottom:-6px;width:1px;background:var(--bd2)}
+.tldot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--s2);border:1.5px solid var(--bd2);position:relative;z-index:1}
+.tldot.a{border-color:var(--acc);background:rgba(196,129,90,.12)}
+.tldot.b{border-color:var(--pnk);background:rgba(196,122,138,.12)}
+.tldot.c{border-color:var(--blu);background:rgba(90,133,168,.12)}
+.tldot.d{border-color:var(--grn);background:rgba(107,158,122,.12)}
+.tldot.e{border-color:var(--wrn);background:rgba(196,145,90,.12)}
+.tlb{flex:1;min-width:0}
+.tlt{font-size:11px;font-weight:600;color:var(--tx3);margin-bottom:3px;letter-spacing:.3px}
+.tlcard{background:white;border-radius:var(--rs);border:1px solid var(--bd);padding:12px 14px;cursor:pointer;box-shadow:var(--shs)}
+.tlcard:active{background:var(--s2)}
+.tltt{font-size:15px;font-weight:700;color:var(--brown2);margin-bottom:3px}
+.tld{font-size:13px;color:var(--tx2);line-height:1.6}
+.tltag{display:inline-block;font-size:10px;font-weight:600;padding:2px 9px;border-radius:20px;margin-top:6px}
+.ta{background:rgba(196,129,90,.1);color:var(--acc)}
+.tb{background:rgba(196,122,138,.1);color:var(--pnk)}
+.tc{background:rgba(90,133,168,.1);color:var(--blu)}
+.td{background:rgba(107,158,122,.1);color:var(--grn)}
+.te{background:rgba(196,145,90,.1);color:var(--wrn)}
+.add-tl-btn{display:flex;align-items:center;gap:8px;margin:2px 0 14px;background:white;border:1.5px dashed var(--bd2);border-radius:var(--rs);padding:11px 16px;cursor:pointer;color:var(--acc);font-size:14px;font-weight:700;font-family:inherit;width:100%;transition:all .2s}
+.add-tl-btn:active{background:var(--s2)}
+
+/* ── CHECKLIST ── */
+.cl-top{margin:12px 16px 0;background:white;border-radius:var(--rs);border:1px solid var(--bd);padding:13px 16px;box-shadow:var(--shs)}
+.cl-lbl{font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:4px}
+.cl-num{font-family:var(--hand);font-size:24px;color:var(--grn)}
+.cl-bar{height:4px;background:var(--s3);border-radius:4px;margin-top:7px;overflow:hidden}
+.cl-fill{height:100%;background:var(--grn);border-radius:4px;transition:width .4s}
+.cls{border-bottom:1px solid var(--bd)}
+.cls-h{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 9px;cursor:pointer;user-select:none}
+.cls-l{display:flex;align-items:center;gap:9px}
+.cls-ic{font-size:18px}
+.cls-nm{font-size:15px;font-weight:700;color:var(--brown2)}
+.cls-r{display:flex;align-items:center;gap:7px}
+.cls-pg{font-size:12px;font-weight:600;color:var(--tx3)}
+.cls-ch{font-size:13px;color:var(--tx3);transition:transform .2s}
+.cls-ch.op{transform:rotate(90deg)}
+.cls-bar{height:2px;background:var(--s3);margin:0 16px;border-radius:2px;overflow:hidden}
+.cls-bfill{height:100%;background:var(--acc);transition:width .3s;border-radius:2px}
+.cl-its{padding:5px 16px 6px;display:none}
+.cl-its.op{display:block}
+.ci{display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.ci:last-child{border-bottom:none}
+.ci-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--latte2);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .2s;background:white}
+.ci.ck .ci-box{background:var(--grn);border-color:var(--grn)}
+.ci.ck .ci-box::after{content:'✓';color:white;font-size:13px;font-weight:800}
+.ci.ck .ci-lbl{text-decoration:line-through;color:var(--tx3)}
+.ci-lbl{font-size:15px;font-weight:500;color:var(--tx);transition:all .2s}
+.ci-note{font-size:12px;color:var(--tx3);margin-top:2px;line-height:1.4}
+.opt-t{display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;border:1px solid var(--bd2);color:var(--tx3)}
+.add-row{display:flex;gap:8px;padding:10px 16px 14px}
+.add-inp{flex:1;background:white;border:1px solid var(--bd2);border-radius:var(--rs);color:var(--tx);font-size:15px;padding:10px 13px;font-family:inherit;outline:none;box-shadow:var(--shs)}
+.add-inp:focus{border-color:var(--acc)}
+.add-btn{background:var(--acc);border:none;border-radius:var(--rs);color:white;font-size:22px;width:44px;cursor:pointer;box-shadow:var(--shs)}
+.add-btn:active{opacity:.7}
+
+/* ── WISHLIST ── */
+.wl-sec{padding:12px 16px}
+.wl-t{font-family:var(--hand);font-size:20px;color:var(--brown2);margin-bottom:10px}
+.wl-i{display:flex;align-items:flex-start;gap:11px;background:white;border-radius:var(--rs);border:1px solid var(--bd);padding:12px 13px;margin-bottom:7px;box-shadow:var(--shs);cursor:pointer;transition:all .15s}
+.wl-i:active{background:var(--s2)}
+.wl-ck{width:20px;height:20px;border-radius:50%;border:2px solid var(--latte2);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;background:white;transition:all .2s}
+.wl-i.dn .wl-ck{background:var(--acc);border-color:var(--acc)}
+.wl-i.dn .wl-ck::after{content:'✓';color:white;font-size:10px;font-weight:800}
+.wl-i.dn .wl-tx{text-decoration:line-through;color:var(--tx3)}
+.wl-tx{font-size:14px;color:var(--tx)}
+.wl-nt{font-size:11px;color:var(--tx3);margin-top:2px}
+.wl-add{display:flex;gap:8px;margin-top:4px}
+.wl-inp{flex:1;background:white;border:1px solid var(--bd2);border-radius:var(--rs);color:var(--tx);font-size:14px;padding:9px 12px;font-family:inherit;outline:none}
+.wl-inp:focus{border-color:var(--acc)}
+.wl-abtn{background:var(--s3);border:1px solid var(--bd2);border-radius:var(--rs);color:var(--brown);font-size:20px;width:42px;cursor:pointer}
+.sep{height:8px;background:var(--cream)}
+
+/* ── DOCS ── */
+.doc-page{padding:12px 16px}
+.info-b{background:rgba(90,133,168,.08);border:1px solid rgba(90,133,168,.2);border-radius:var(--rs);padding:11px 13px;font-size:13px;color:var(--blu);line-height:1.55;margin-bottom:12px}
+.doc-c{background:white;border-radius:var(--r);border:1px solid var(--bd);margin-bottom:10px;overflow:hidden;box-shadow:var(--shs)}
+.doc-h{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none;background:var(--s1)}
+.doc-hi{font-size:19px}
+.doc-ht{font-size:15px;font-weight:700;color:var(--brown2);flex:1}
+.doc-hc{font-size:13px;color:var(--tx3);transition:transform .2s}
+.doc-hc.op{transform:rotate(90deg)}
+.doc-body{padding:11px 16px;display:none}
+.doc-body.op{display:block}
+.doc-it{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.doc-it:last-child{border-bottom:none}
+.doc-ii{font-size:15px;flex-shrink:0;margin-top:1px}
+.doc-tx{font-size:13px;color:var(--tx);line-height:1.55}
+.doc-nt{font-size:11px;color:var(--tx3);margin-top:2px}
+.doc-wn{background:rgba(196,145,90,.1);border:1px solid rgba(196,145,90,.25);border-radius:var(--rs);padding:9px 12px;font-size:12px;color:var(--wrn);line-height:1.55;margin-top:8px}
+
+/* ── NOTES ── */
+.nt-page{padding:12px 16px}
+.nt-c{background:white;border-radius:var(--r);border:1px solid var(--bd);padding:14px;margin-bottom:10px;box-shadow:var(--shs)}
+.nt-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.nt-tt{font-size:14px;font-weight:700;color:var(--brown2)}
+.nt-btn{background:none;border:none;color:var(--tx3);font-size:16px;cursor:pointer;padding:2px 6px}
+.nt-tx{font-size:13px;color:var(--tx2);line-height:1.7;white-space:pre-wrap}
+.nt-ta{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--rs);color:var(--tx);font-size:13px;padding:10px;min-height:85px;font-family:inherit;line-height:1.6;resize:none;outline:none;display:none}
+
+/* ── MODALS ── */
+.mover{position:fixed;inset:0;background:rgba(42,33,24,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.mover.op{display:flex}
+.modal{background:var(--cream);border-radius:22px 22px 0 0;padding:20px 20px max(34px,env(safe-area-inset-bottom));width:100%;max-width:430px;border-top:1px solid var(--bd2)}
+.modal h3{font-family:var(--hand);font-size:20px;color:var(--brown2);margin-bottom:13px}
+.modal input,.modal textarea,.modal select{width:100%;background:white;border:1px solid var(--bd2);border-radius:var(--rs);color:var(--tx);font-size:14px;padding:11px 12px;font-family:inherit;outline:none;margin-bottom:9px;display:block}
+.modal textarea{min-height:70px;resize:none}
+.modal-row{display:flex;gap:8px}
+.modal-row input,.modal-row select{flex:1;margin-bottom:9px}
+.mbtns{display:flex;gap:10px}
+.mbtn{flex:1;padding:12px;border-radius:var(--rs);border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit}
+.mbtn.p{background:var(--acc);color:white}
+.mbtn.s{background:var(--s3);color:var(--tx2)}
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="ld">
+  <div class="ld-ic">
+    <svg viewBox="0 0 78 78" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="39" cy="52" rx="30" ry="17" fill="#d4c4b0" opacity=".5"/>
+      <ellipse cx="24" cy="43" rx="20" ry="12" fill="#d4c4b0" opacity=".4"/>
+      <ellipse cx="54" cy="40" rx="16" ry="10" fill="#d4c4b0" opacity=".35"/>
+      <text x="39" y="49" font-family="Georgia,serif" font-size="38" font-weight="bold" fill="#7a6652" text-anchor="middle">J</text>
+    </svg>
+  </div>
+  <div class="ld-nm" id="ld-nm">J人計劃</div>
+  <div class="ld-sb">Bangkok · Apr 2026</div>
+  <div class="ld-bar"><div class="ld-fill" id="ld-fill"></div></div>
+</div>
+
+<!-- hidden file inputs -->
+<input type="file" id="fi-hero" accept="image/*" onchange="setBg('hero-bg',this)">
+<input type="file" id="fi-itin" accept="image/*" onchange="setBg('itin-bg',this)">
+<input type="file" id="fi-pack" accept="image/*" onchange="setBg('pack-bg',this)">
+<input type="file" id="fi-wish" accept="image/*" onchange="setBg('wish-bg',this)">
+<input type="file" id="fi-docs" accept="image/*" onchange="setBg('docs-bg',this)">
+<input type="file" id="fi-notes" accept="image/*" onchange="setBg('notes-bg',this)">
+<input type="file" id="fi-qc0" accept="image/*" onchange="setQcBg(0,this)">
+<input type="file" id="fi-qc1" accept="image/*" onchange="setQcBg(1,this)">
+<input type="file" id="fi-qc2" accept="image/*" onchange="setQcBg(2,this)">
+<input type="file" id="fi-qc3" accept="image/*" onchange="setQcBg(3,this)">
+
+<!-- ═══════════ HOME ═══════════ -->
+<div id="pg-home" class="pg on">
+  <div class="phero home-hero">
+    <div class="phero-bg" id="hero-bg"></div>
+    <div class="phero-ov"></div>
+    <div class="phero-cnt">
+      <div class="phero-top">
+        <div>
+          <div class="hero-lbl" id="h-lbl">J人計劃</div>
+          <div class="hero-dest"><span>🇹🇭</span><span id="h-dest">Bangkok</span></div>
+          <div class="hero-dates" id="h-dates">VZ571 13:25 TPE→BKK ｜ VZ566 01:55 BKK→TPE</div>
+        </div>
+        <div class="phero-right">
+          <select class="lang-sel" id="ls-home" onchange="setLang(this.value)"></select>
+          <button class="photo-btn" onclick="document.getElementById('fi-hero').click()">📷 <span id="h-covtxt">封面</span></button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-n"><span id="days-n">—</span><span class="stat-u" id="days-u"> 天</span></div>
+          <div class="stat-l" id="s-days">距出發</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">3<span class="stat-u" id="nights-u"> 晚</span></div>
+          <div class="stat-l" id="s-nights">行程</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n" id="pack-pct">0%</div>
+          <div class="stat-l" id="s-packed">打包進度</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- weather -->
+  <div class="wx-card" onclick="loadWx()">
+    <div class="wx-emoji" id="wx-em">🌤</div>
+    <div id="wx-in">
+      <div class="wx-loc">📍</div>
+      <div class="wx-hint" id="wx-hint">點此取得天氣</div>
+    </div>
+  </div>
+
+  <!-- warn -->
+  <div class="warn" id="h-warn">☀️ 曼谷4月均溫35°C+，體感40°C+。4/4全天戶外，請備好電解質包和防曬！</div>
+
+  <!-- quick grid -->
+  <div class="qgrid">
+    <div class="qc" id="qc0">
+      <div class="qc-bg" id="qc-bg0"></div><div class="qc-ov"></div>
+      <div class="qc-in"><div class="qc-i">🗓</div><div class="qc-l" id="q-itin">行程</div><div class="qc-s" id="q-itin2">三晚完整規劃</div></div>
+      <div class="qc-cam" onclick="event.stopPropagation();document.getElementById('fi-qc0').click()">📷</div>
+    </div>
+    <div class="qc" id="qc1">
+      <div class="qc-bg" id="qc-bg1"></div><div class="qc-ov"></div>
+      <div class="qc-in"><div class="qc-i">🧳</div><div class="qc-l" id="q-pack">打包</div><div class="qc-s" id="pack-sub">0/44 已完成</div></div>
+      <div class="qc-cam" onclick="event.stopPropagation();document.getElementById('fi-qc1').click()">📷</div>
+    </div>
+    <div class="qc" id="qc2">
+      <div class="qc-bg" id="qc-bg2"></div><div class="qc-ov"></div>
+      <div class="qc-in"><div class="qc-i">🛍</div><div class="qc-l" id="q-wish">踩點清單</div><div class="qc-s" id="q-wish2">景點與購物</div></div>
+      <div class="qc-cam" onclick="event.stopPropagation();document.getElementById('fi-qc2').click()">📷</div>
+    </div>
+    <div class="qc" id="qc3">
+      <div class="qc-bg" id="qc-bg3"></div><div class="qc-ov"></div>
+      <div class="qc-in"><div class="qc-i">📋</div><div class="qc-l" id="q-docs">入境文件</div><div class="qc-s" id="q-docs2">泰國入境規定</div></div>
+      <div class="qc-cam" onclick="event.stopPropagation();document.getElementById('fi-qc3').click()">📷</div>
+    </div>
+  </div>
+  <script>
+  ['qc0','qc1','qc2','qc3'].forEach(function(id,i){
+    var map=['itinerary','checklist','wishlist','docs'];
+    document.getElementById(id).addEventListener('click',function(){goPage(map[i]);});
+  });
+  </script>
+</div>
+
+<!-- ═══════════ ITINERARY ═══════════ -->
+<div id="pg-itinerary" class="pg">
+  <div class="phero" id="itin-hero" style="min-height:110px;background:var(--s1)">
+    <div class="phero-bg" id="itin-bg"></div>
+    <div class="phero-ov"></div>
+    <div class="phero-cnt">
+      <div class="phero-top">
+        <div class="phero-title" id="ph-itin">🗓 行程總覽</div>
+        <div class="phero-right">
+          <select class="lang-sel" id="ls-itin" onchange="setLang(this.value)"></select>
+          <button class="photo-btn" onclick="document.getElementById('fi-itin').click()">📷 <span id="itin-covtxt">封面</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="dtabs" id="dtabs">
+    <div class="dtab on" onclick="showDay(0,this)"><span id="d0a">4/3 Fri</span><br><small id="d0b" style="font-size:10px;opacity:.8">抵達日</small></div>
+    <div class="dtab" onclick="showDay(1,this)"><span id="d1a">4/4 Sat</span><br><small id="d1b" style="font-size:10px;opacity:.8">活動日</small></div>
+    <div class="dtab" onclick="showDay(2,this)"><span id="d2a">4/5 Sun</span><br><small id="d2b" style="font-size:10px;opacity:.8">自由日</small></div>
+    <div class="dtab" onclick="showDay(3,this)"><span id="d3a">4/6 Mon</span><br><small id="d3b" style="font-size:10px;opacity:.8">返台日</small></div>
+  </div>
+
+  <div id="day-0" class="dayc on">
+    <div class="tli"><div class="tldot c">✈️</div><div class="tlb"><div class="tlt" data-i="tlt-d0-0">13:25 TPE Terminal 1</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d0-0">VZ571 — TPE → BKK 出發</div><div class="tld" data-i="td-d0-0">泰越捷 Thai VietJet · 桃園 T1<br>手提嚴格限 7 kg · 托運 15 kg</div><span class="tltag te" data-i="tg-d0-0">⚠ 手提 7 kg 嚴格執行</span></div></div></div>
+    <div class="tli"><div class="tldot c">🛬</div><div class="tlb"><div class="tlt" data-i="tlt-d0-1">16:10 — BKK 素萬那普</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d0-1">抵達曼谷</div><div class="tld" data-i="td-d0-1">TDAC 未填者可在排隊時完成<br>移民局 ~40–60 分 · 行李 ~20 分 · 預計離場：~17:45</div><span class="tltag tc" data-i="tg-d0-1">📱 需填寫 TDAC 數位入境卡</span></div></div></div>
+    <div class="tli"><div class="tldot c">🚗</div><div class="tlb"><div class="tlt" data-i="tlt-d0-2">~17:45</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d0-2">前往飯店</div><div class="tld" data-i="td-d0-2">方案 A：Grab 直達 ~40–55 分 · THB 400–600<br>方案 B：機場捷運 → Phaya Thai → BTS 到 Siam</div></div></div></div>
+    <div class="tli"><div class="tldot a">🏨</div><div class="tlb"><div class="tlt" data-i="tlt-d0-3">~18:30</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d0-3">Check-in — Siam@Siam Design Hotel</div><div class="tld" data-i="td-d0-3">865 Rama I Rd · BTS National Stadium 對面<br>要求：18F+，城市景觀，落地玻璃窗</div><span class="tltag td" data-i="tg-d0-3">✓ 步行 10 分鐘可到體育場</span></div></div></div>
+    <div class="tli"><div class="tldot a">🏟</div><div class="tlb"><div class="tlt" data-i="tlt-d0-4">19:00 – ~20:30</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d0-4">步行至蘇帕查拉賽體育場</div><div class="tld" data-i="td-d0-4">踩點場地，觀察明日入場動線<br>順便看看彩排散場狀況</div></div></div></div>
+    <div class="tli"><div class="tldot d">🍜</div><div class="tlb"><div class="tlt" data-i="tlt-d0-5">20:00 起</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d0-5">與朋友聚餐 💛</div><div class="tld" data-i="td-d0-5">朋友 4/4 晚飛回台灣——今晚是最後機會！<br>建議選 Siam / MBK 附近的餐廳</div><span class="tltag tb" data-i="tg-d0-5">✨ 珍惜這個時光</span></div></div></div>
+    <button class="add-tl-btn" onclick="openAdd(0)">＋ <span data-i="add-d0">新增行程到 4/3</span></button>
+    <div id="extra-0"></div>
+  </div>
+
+  <div id="day-1" class="dayc">
+    <div class="tli"><div class="tldot d">🍳</div><div class="tlb"><div class="tlt" data-i="tlt-d1-0">07:00 – 08:30</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d1-0">飯店早餐</div><div class="tld" data-i="td-d1-0">補充能量準備全天戶外行程<br>出門前擦好防曬</div></div></div></div>
+    <div class="tli"><div class="tldot e">🧴</div><div class="tlb"><div class="tlt" data-i="tlt-d1-1">08:30 – 09:10</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d1-1">防中暑準備 + 換上應援服</div><div class="tld" data-i="td-d1-1">應援服內穿排汗背心！<br>隨身包：水 ×2 · 電解質包 · 消暑噴霧 · 小毛巾</div><span class="tltag te" data-i="tg-d1-1">⚠ 體感溫度可達 40°C+</span></div></div></div>
+    <div class="tli"><div class="tldot b">📋</div><div class="tlb"><div class="tlt" data-i="tlt-d1-2">09:10 出發</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d1-2">前往報到地點</div><div class="tld" data-i="td-d1-2">朱拉隆功大學 體育科學學院<br>คณะวิทยาศาสตร์การกีฬา จุฬาลงกรณ์มหาวิทยาลัย</div><span class="tltag tb" data-i="tg-d1-2">報到時段：09:27 – 12:00</span></div></div></div>
+    <div class="tli"><div class="tldot b">🎟</div><div class="tlb"><div class="tlt" data-i="tlt-d1-3">09:27 – 12:00</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d1-3">Channel 3 56th 官方報到</div><div class="tld" data-i="td-d1-3">領取：入場票券 · 粉絲區應援物含團服<br>與同好互動拍照</div><span class="tltag tb" data-i="tg-d1-3">🎉 Channel 3 56 週年</span></div></div></div>
+    <div class="tli"><div class="tldot a">🏬</div><div class="tlb"><div class="tlt" data-i="tlt-d1-4">12:00 – 15:30</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d1-4">午餐 + 室內避暑</div><div class="tld" data-i="td-d1-4">MBK / Siam Paragon 冷氣房休息<br>約 14:00 補擦防曬</div><span class="tltag te" data-i="tg-d1-4">🌡 正午最熱，待室內</span></div></div></div>
+    <div class="tli"><div class="tldot b">⚽</div><div class="tlb"><div class="tlt" data-i="tlt-d1-5">15:30 – 18:00</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d1-5">進入蘇帕查拉賽體育場</div><div class="tld" data-i="td-d1-5">找好粉絲看台座位<br>補擦防曬 · 補充水分與電解質</div></div></div></div>
+    <div class="tli"><div class="tldot b">🎊</div><div class="tlb"><div class="tlt" data-i="tlt-d1-6">18:00</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d1-6">Channel 3 56th 足球活動開始！🏆</div><div class="tld" data-i="td-d1-6">💗 全力應援你的偶像——享受每一刻！</div><span class="tltag tb" data-i="tg-d1-6">主活動開始</span></div></div></div>
+    <div class="tli"><div class="tldot a">🚶</div><div class="tlb"><div class="tlt" data-i="tlt-d1-7">散場後</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d1-7">步行回 Siam@Siam 飯店</div><div class="tld" data-i="td-d1-7">人潮眾多難叫車 → 步行約 10 分鐘<br>回飯店補充水分 · 沖涼休息</div><span class="tltag td" data-i="tg-d1-7">✓ 不需要搶車！</span></div></div></div>
+    <button class="add-tl-btn" onclick="openAdd(1)">＋ <span data-i="add-d1">新增行程到 4/4</span></button>
+    <div id="extra-1"></div>
+  </div>
+
+  <div id="day-2" class="dayc">
+    <div class="tli"><div class="tldot d">☕</div><div class="tlb"><div class="tlt" data-i="tlt-d2-0">睡晚一點 → ~09:00</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d2-0">休息 &amp; 悠閒早餐</div><div class="tld" data-i="td-d2-0">恢復昨天的體力<br>確認今天的踩點清單和購物目標</div></div></div></div>
+    <div class="tli"><div class="tldot a">🛍</div><div class="tlb"><div class="tlt" data-i="tlt-d2-1">10:00 – 18:00</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d2-1">自由日——購物 &amp; 美食！</div><div class="tld" data-i="td-d2-1">一一完成清單上的餐廳和店家<br>MBK · 白金 · Siam · 假日市集 · 恰圖恰</div><span class="tltag te" data-i="tg-d2-1">🌡 12–15:00 待室內</span></div></div></div>
+    <div class="tli"><div class="tldot d">🍽</div><div class="tlb"><div class="tlt" data-i="tlt-d2-2">18:00 – 20:30</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d2-2">晚餐——就是那間標記很久的！</div><div class="tld" data-i="td-d2-2">傍晚氣溫較涼，適合戶外或開放式餐廳</div></div></div></div>
+    <div class="tli"><div class="tldot e">🧳</div><div class="tlb"><div class="tlt" data-i="tlt-d2-3">20:30 – 21:30</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d2-3">整理行李 + 秤重</div><div class="tld" data-i="td-d2-3">戰利品塞好 · 托運 ≤15 kg · 手提再確認 7 kg<br>行動電源一定放手提！</div><span class="tltag te" data-i="tg-d2-3">⚠ 行動電源 = 手提行李</span></div></div></div>
+    <div class="tli"><div class="tldot c">🚗</div><div class="tlb"><div class="tlt" data-i="tlt-d2-4">22:00 – 22:30</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d2-4">Grab 前往 BKK 機場</div><div class="tld" data-i="td-d2-4">深夜車少，約 30–40 分<br>目標抵達機場：23:00–23:15</div><span class="tltag tc" data-i="tg-d2-4">VZ566 01:55 起飛</span></div></div></div>
+    <button class="add-tl-btn" onclick="openAdd(2)">＋ <span data-i="add-d2">新增行程到 4/5</span></button>
+    <div id="extra-2"></div>
+  </div>
+
+  <div id="day-3" class="dayc">
+    <div class="tli"><div class="tldot c">🌙</div><div class="tlb"><div class="tlt" data-i="tlt-d3-0">~23:15（4/5 深夜）</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d3-0">抵達素萬那普機場</div><div class="tld" data-i="td-d3-0">辦理 Check-in + 托運行李<br>移民局 + 安全檢查 · 距起飛約 2h40m</div></div></div></div>
+    <div class="tli"><div class="tldot a">🛒</div><div class="tlb"><div class="tlt" data-i="tlt-d3-1">00:00 – 01:30</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d3-1">免稅店最後採購 + 候機</div><div class="tld" data-i="td-d3-1">BKK 深夜免稅店仍有開<br>最後機會：零食 · 保養品 · 伴手禮</div></div></div></div>
+    <div class="tli"><div class="tldot c">✈️</div><div class="tlb"><div class="tlt" data-i="tlt-d3-2">01:55 BKK → 06:45 TPE T1</div><div class="tlcard" onclick="editTl(this)"><div class="tltt" data-i="tt-d3-2">VZ566 — 回家了 🏠</div><div class="tld" data-i="td-d3-2">泰越捷 · 06:45 抵達桃園 T1<br>在飛機上好好睡一覺 💤</div><span class="tltag td" data-i="tg-d3-2">✓ 回台灣！</span></div></div></div>
+    <button class="add-tl-btn" onclick="openAdd(3)">＋ <span data-i="add-d3">新增行程到 4/6</span></button>
+    <div id="extra-3"></div>
+  </div>
+</div>
+
+<!-- ═══════════ CHECKLIST ═══════════ -->
+<div id="pg-checklist" class="pg">
+  <div class="phero" style="min-height:90px;background:var(--s1)">
+    <div class="phero-bg" id="pack-bg"></div>
+    <div class="phero-ov"></div>
+    <div class="phero-cnt">
+      <div class="phero-top">
+        <div class="phero-title" id="ph-pack">🧳 打包清單</div>
+        <div class="phero-right">
+          <select class="lang-sel" id="ls-pack" onchange="setLang(this.value)"></select>
+          <button class="photo-btn" onclick="document.getElementById('fi-pack').click()">📷 <span id="pack-covtxt">封面</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cl-top">
+    <div class="cl-lbl" id="cl-lbl">已打包項目</div>
+    <div class="cl-num"><span id="ck-done">0</span> / <span id="ck-total">0</span></div>
+    <div class="cl-bar"><div class="cl-fill" id="ck-bar" style="width:0%"></div></div>
+  </div>
+  <div id="cl-con"></div>
+  <div class="add-row">
+    <input class="add-inp" id="cl-inp" placeholder="新增物品..." onkeydown="if(event.key==='Enter')addCI()">
+    <button class="add-btn" onclick="addCI()">＋</button>
+  </div>
+</div>
+
+<!-- ═══════════ WISHLIST ═══════════ -->
+<div id="pg-wishlist" class="pg">
+  <div class="phero" style="min-height:90px;background:var(--s1)">
+    <div class="phero-bg" id="wish-bg"></div>
+    <div class="phero-ov"></div>
+    <div class="phero-cnt">
+      <div class="phero-top">
+        <div class="phero-title" id="ph-wish">🛍 踩點清單</div>
+        <div class="phero-right">
+          <select class="lang-sel" id="ls-wish" onchange="setLang(this.value)"></select>
+          <button class="photo-btn" onclick="document.getElementById('fi-wish').click()">📷 <span id="wish-covtxt">封面</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wl-sec"><div class="wl-t">🍜 <span id="wl-food-t">餐廳美食</span></div><div id="wl-food"></div><div class="wl-add"><input class="wl-inp" id="wf-inp" placeholder="新增餐廳..."><button class="wl-abtn" onclick="addWl('food','wf-inp')">＋</button></div></div>
+  <div class="sep"></div>
+  <div class="wl-sec"><div class="wl-t">🏪 <span id="wl-shop-t">購物清單</span></div><div id="wl-shop"></div><div class="wl-add"><input class="wl-inp" id="ws-inp" placeholder="新增購物..."><button class="wl-abtn" onclick="addWl('shop','ws-inp')">＋</button></div></div>
+  <div class="sep"></div>
+  <div class="wl-sec"><div class="wl-t">📍 <span id="wl-place-t">景點踩點</span></div><div id="wl-place"></div><div class="wl-add"><input class="wl-inp" id="wp-inp" placeholder="新增景點..."><button class="wl-abtn" onclick="addWl('place','wp-inp')">＋</button></div></div>
+</div>
+
+<!-- ═══════════ DOCS ═══════════ -->
+<div id="pg-docs" class="pg">
+  <div class="phero" style="min-height:90px;background:var(--s1)">
+    <div class="phero-bg" id="docs-bg"></div>
+    <div class="phero-ov"></div>
+    <div class="phero-cnt">
+      <div class="phero-top">
+        <div class="phero-title" id="ph-docs">📋 入境文件</div>
+        <div class="phero-right">
+          <select class="lang-sel" id="ls-docs" onchange="setLang(this.value)"></select>
+          <button class="photo-btn" onclick="document.getElementById('fi-docs').click()">📷 <span id="docs-covtxt">封面</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="doc-page">
+    <div class="info-b">🇹🇼 台灣護照：<b>免簽入境泰國，最長 60 天</b>，無需事先申請簽證。</div>
+    <div class="doc-c"><div class="doc-h" onclick="togDoc(this)"><div class="doc-hi">🪪</div><div class="doc-ht" data-i="doc-t0">護照與證件</div><div class="doc-hc">›</div></div><div class="doc-body"><div class="doc-it"><div class="doc-ii">📘</div><div><div class="doc-tx" data-i="doc-i0-0">有效護照 — <b>入境起至少 6 個月效期</b></div><div class="doc-nt" data-i="doc-n0-0">效期須至 2026 年 10 月 3 日以後</div></div></div><div class="doc-it"><div class="doc-ii">✈️</div><div><div class="doc-tx" data-i="doc-i0-1">回程機票證明 — VZ566 4/6 BKK→TPE</div><div class="doc-nt" data-i="doc-n0-1">存在手機或列印備用</div></div></div><div class="doc-it"><div class="doc-ii">🏨</div><div><div class="doc-tx" data-i="doc-i0-2">飯店訂房確認單</div><div class="doc-nt" data-i="doc-n0-2">Siam@Siam Design Hotel · 4/3–4/6</div></div></div></div></div>
+    <div class="doc-c"><div class="doc-h" onclick="togDoc(this)"><div class="doc-hi">📱</div><div class="doc-ht" data-i="doc-t1">線上 / 數位文件</div><div class="doc-hc">›</div></div><div class="doc-body"><div class="doc-it"><div class="doc-ii">🌐</div><div><div class="doc-tx" data-i="doc-i1-0"><b>泰國數位入境卡 TDAC</b> — 必填</div><div class="doc-nt" data-i="doc-n1-0">填寫網址：tdac.immigration.go.th · 免費 · 約 5 分鐘</div></div></div><div class="doc-it"><div class="doc-ii">📶</div><div><div class="doc-tx" data-i="doc-i1-1">eSIM — 出發前啟用並測試</div></div></div><div class="doc-it"><div class="doc-ii">🚕</div><div><div class="doc-tx" data-i="doc-i1-2">Grab app 安裝 · 付款方式設定完成</div></div></div></div></div>
+    <div class="doc-c"><div class="doc-h" onclick="togDoc(this)"><div class="doc-hi">🧳</div><div class="doc-ht" data-i="doc-t2">行李規定 · 泰越捷</div><div class="doc-hc">›</div></div><div class="doc-body"><div class="doc-it"><div class="doc-ii">👜</div><div><div class="doc-tx" data-i="doc-i2-0">手提行李：<b>總重 7 kg</b>（主包 + 隨身小包合計）</div><div class="doc-nt" data-i="doc-n2-0">尺寸限 56×36×23 cm · 地勤人員會實際秤重</div></div></div><div class="doc-it"><div class="doc-ii">🧳</div><div><div class="doc-tx" data-i="doc-i2-1">托運行李：<b>15 kg</b>（已加購，來回適用）</div></div></div><div class="doc-it"><div class="doc-ii">🔋</div><div><div class="doc-tx" data-i="doc-i2-2">行動電源：<b>只能放手提，不可托運</b></div><div class="doc-nt" data-i="doc-n2-2">≤100Wh 免申請；101–160Wh 需航空公司同意</div></div></div><div class="doc-it"><div class="doc-ii">💧</div><div><div class="doc-tx" data-i="doc-i2-3">液體：每瓶 ≤100ml，裝入 1L 夾鏈袋</div></div></div><div class="doc-wn" data-i="doc-wn2">⚠️ 泰越捷嚴格執行 7 kg 手提限制，出發前務必在家先秤重！</div></div></div>
+    <div class="doc-c"><div class="doc-h" onclick="togDoc(this)"><div class="doc-hi">🚫</div><div class="doc-ht" data-i="doc-t3">泰國禁帶物品</div><div class="doc-hc">›</div></div><div class="doc-body"><div class="doc-it"><div class="doc-ii">🚬</div><div><div class="doc-tx" data-i="doc-i3-0">電子煙 / 加熱菸 — <b>嚴格禁止</b></div><div class="doc-nt" data-i="doc-n3-0">罰款最高 THB 30,000 或監禁，零容忍</div></div></div><div class="doc-it"><div class="doc-ii">🌿</div><div><div class="doc-tx" data-i="doc-i3-1">各類毒品 — 嚴懲</div></div></div><div class="doc-it"><div class="doc-ii">💰</div><div><div class="doc-tx" data-i="doc-i3-2">攜帶超過 USD 15,000 現金須申報</div></div></div></div></div>
+    <div class="doc-c"><div class="doc-h" onclick="togDoc(this)"><div class="doc-hi">💊</div><div class="doc-ht" data-i="doc-t4">藥品攜帶規定</div><div class="doc-hc">›</div></div><div class="doc-body"><div class="doc-it"><div class="doc-ii">💊</div><div><div class="doc-tx" data-i="doc-i4-0">處方藥攜帶原包裝，附醫師處方箋</div></div></div><div class="doc-it"><div class="doc-ii">📄</div><div><div class="doc-tx" data-i="doc-i4-1">延經藥：建議備妥處方箋以防萬一</div><div class="doc-nt" data-i="doc-n4-1">一般允許攜帶，有文件更安心</div></div></div><div class="doc-it"><div class="doc-ii">🧴</div><div><div class="doc-tx" data-i="doc-i4-2">OTC 藥品（電解質、止瀉藥、普拿疼）無問題</div></div></div></div></div>
+    <div class="doc-c"><div class="doc-h" onclick="togDoc(this)"><div class="doc-hi">🌡</div><div class="doc-ht" data-i="doc-t5">防中暑 &amp; 健康</div><div class="doc-hc">›</div></div><div class="doc-body"><div class="doc-it"><div class="doc-ii">☀️</div><div><div class="doc-tx" data-i="doc-i5-0">4 月 = 全年最熱，均溫 35°C，體感 40°C+</div><div class="doc-nt" data-i="doc-n5-0">正午尖峰 11:00–15:00，避免長時間戶外</div></div></div><div class="doc-it"><div class="doc-ii">💧</div><div><div class="doc-tx" data-i="doc-i5-1">活動當天至少喝 2–3 L 水</div></div></div><div class="doc-it"><div class="doc-ii">⚡</div><div><div class="doc-tx" data-i="doc-i5-2">電解質包（ORS）入場前先補充一包</div></div></div><div class="doc-it"><div class="doc-ii">🧴</div><div><div class="doc-tx" data-i="doc-i5-3">防曬 SPF 50+，每 2 小時補擦一次</div></div></div><div class="doc-it"><div class="doc-ii">🆘</div><div><div class="doc-tx" data-i="doc-i5-4"><b>中暑徵兆：停止排汗 + 頭暈 + 意識模糊 → 立刻進室內</b></div></div></div><div class="doc-it"><div class="doc-ii">📞</div><div><div class="doc-tx" data-i="doc-i5-5">緊急救護：<b>1669</b> · 旅遊警察：<b>1155</b></div></div></div></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ NOTES ═══════════ -->
+<div id="pg-notes" class="pg">
+  <div class="phero" style="min-height:90px;background:var(--s1)">
+    <div class="phero-bg" id="notes-bg"></div>
+    <div class="phero-ov"></div>
+    <div class="phero-cnt">
+      <div class="phero-top">
+        <div class="phero-title" id="ph-notes">📝 備忘錄</div>
+        <div class="phero-right">
+          <select class="lang-sel" id="ls-notes" onchange="setLang(this.value)"></select>
+          <button class="photo-btn" onclick="document.getElementById('fi-notes').click()">📷 <span id="notes-covtxt">封面</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="nt-page">
+    <div class="nt-c"><div class="nt-h"><div class="nt-tt">🏨 飯店</div><button class="nt-btn" onclick="togNote(this)">✏️</button></div><div class="nt-tx" id="nt-hotel">Siam@Siam Design Hotel Bangkok
+865 Rama I Rd, Wang Mai, Pathum Wan
+☎ +66 2 217 3000
+Check-in: 4/3 · Check-out: 4/6 早
+要求：18F+，城市景觀，落地玻璃窗</div><textarea class="nt-ta" id="nt-hotel-ta" onblur="saveNote('hotel')"></textarea></div>
+    <div class="nt-c"><div class="nt-h"><div class="nt-tt">✈️ 航班</div><button class="nt-btn" onclick="togNote(this)">✏️</button></div><div class="nt-tx" id="nt-flight">VZ571 | 4/3 | TPE T1 13:25 → BKK 16:10
+VZ566 | 4/6 | BKK 01:55 → TPE T1 06:45
+托運：15 kg（來回已購）
+手提：7 kg 總重（嚴格執行）</div><textarea class="nt-ta" id="nt-flight-ta" onblur="saveNote('flight')"></textarea></div>
+    <div class="nt-c"><div class="nt-h"><div class="nt-tt">🎉 活動</div><button class="nt-btn" onclick="togNote(this)">✏️</button></div><div class="nt-tx" id="nt-event">Channel 3 56th Anniversary Football Event
+📋 報到：朱拉隆功大學體育科學學院
+   คณะวิทยาศาสตร์การกีฬา จุฬาลงกรณ์มหาวิทยาลัย
+   時間：09:27 – 12:00
+   領取：入場票 + 應援物 + 團服
+⚽ 主活動：蘇帕查拉賽體育場 18:00 開始</div><textarea class="nt-ta" id="nt-event-ta" onblur="saveNote('event')"></textarea></div>
+    <div class="nt-c"><div class="nt-h"><div class="nt-tt">💊 健康提醒</div><button class="nt-btn" onclick="togNote(this)">✏️</button></div><div class="nt-tx" id="nt-health">• 延經藥：按醫師指示服用
+• 電解質包：活動前補充
+• 防曬 SPF50+：每 2 小時補擦
+• 止瀉藥：備用
+• 中暑：停止排汗+頭暈 → 立刻進室內
+• 緊急：1669 · 旅遊警察：1155</div><textarea class="nt-ta" id="nt-health-ta" onblur="saveNote('health')"></textarea></div>
+    <div class="nt-c"><div class="nt-h"><div class="nt-tt">📝 自由筆記</div><button class="nt-btn" onclick="togNote(this)">✏️</button></div><div class="nt-tx" id="nt-free">在這裡記錄任何事...</div><textarea class="nt-ta" id="nt-free-ta" onblur="saveNote('free')"></textarea></div>
+  </div>
+</div>
+
+<!-- EDIT TL MODAL -->
+<div class="mover" id="m-edit">
+  <div class="modal">
+    <h3 id="m-edit-h">✏️ 編輯行程</h3>
+    <input id="m-tt" placeholder="標題">
+    <textarea id="m-td" placeholder="說明..."></textarea>
+    <div class="mbtns">
+      <button class="mbtn s" onclick="closeM('m-edit')" id="m-cancel">取消</button>
+      <button class="mbtn p" onclick="saveEdit()" id="m-save">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TL MODAL -->
+<div class="mover" id="m-add">
+  <div class="modal">
+    <h3 id="m-add-h">＋ 新增行程</h3>
+    <div class="modal-row">
+      <input id="at-time" placeholder="時間（如 14:00）">
+      <select id="at-em">
+        <option>✈️</option><option>🛬</option><option>🚗</option><option>🏨</option>
+        <option>🍜</option><option>🍳</option><option>🛍</option><option>🏟</option>
+        <option>🎉</option><option>🏬</option><option>💊</option><option>📋</option>
+        <option>🎟</option><option>🚶</option><option>🌙</option><option>☕</option>
+        <option>🍽</option><option>🧳</option><option>🛒</option><option>📍</option>
+      </select>
+    </div>
+    <input id="at-tt" placeholder="標題（必填）">
+    <textarea id="at-td" placeholder="說明（選填）"></textarea>
+    <div class="mbtns">
+      <button class="mbtn s" onclick="closeM('m-add')" id="at-cancel">取消</button>
+      <button class="mbtn p" onclick="saveAdd()" id="at-save">新增</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="nb on" id="nav-home" onclick="goPage('home')"><span class="ni">🏠</span><span id="nb-home">首頁</span></button>
+  <button class="nb" id="nav-itinerary" onclick="goPage('itinerary')"><span class="ni">🗓</span><span id="nb-itin">行程</span></button>
+  <button class="nb" id="nav-checklist" onclick="goPage('checklist')"><span class="ni">🧳</span><span id="nb-pack">打包</span></button>
+  <button class="nb" id="nav-wishlist" onclick="goPage('wishlist')"><span class="ni">🛍</span><span id="nb-wish">清單</span></button>
+  <button class="nb" id="nav-docs" onclick="goPage('docs')"><span class="ni">📋</span><span id="nb-docs">文件</span></button>
+  <button class="nb" id="nav-notes" onclick="goPage('notes')"><span class="ni">📝</span><span id="nb-notes">備忘</span></button>
+</nav>
+
+<script>
+// ══ STORAGE ══
+var S={
+  g:function(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},
+  s:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+};
+
+// ══ i18n DATA ══
+var LANGS=[
+  {c:'zh',f:'🇹🇼',l:'繁體中文'},
+  {c:'en',f:'🇬🇧',l:'English'},
+  {c:'th',f:'🇹🇭',l:'ภาษาไทย'},
+  {c:'ja',f:'🇯🇵',l:'日本語'},
+  {c:'ko',f:'🇰🇷',l:'한국어'}
+];
+
+var TX={
+zh:{
+  appName:'J人計劃',
+  daysU:' 天',nightsU:' 晚',
+  sDays:'距出發',sNights:'行程',sPacked:'打包進度',
+  warn:'☀️ 曼谷4月均溫35°C+，體感40°C+。4/4全天戶外，請備好電解質包和防曬！',
+  wxHint:'點此取得天氣',covTxt:'封面',optLbl:'選帶',
+  qItin:'行程',qItin2:'三晚完整規劃',qPack:'打包',
+  qWish:'踩點清單',qWish2:'景點與購物',qDocs:'入境文件',qDocs2:'泰國入境規定',
+  phItin:'🗓 行程總覽',phPack:'🧳 打包清單',phWish:'🛍 踩點清單',phDocs:'📋 入境文件',phNotes:'📝 備忘錄',
+  clLbl:'已打包項目',
+  d0b:'抵達日',d1b:'活動日',d2b:'自由日',d3b:'返台日',
+  addD:['新增行程到 4/3','新增行程到 4/4','新增行程到 4/5','新增行程到 4/6'],
+  wlFood:'餐廳美食',wlShop:'購物清單',wlPlace:'景點踩點',
+  nbHome:'首頁',nbItin:'行程',nbPack:'打包',nbWish:'清單',nbDocs:'文件',nbNotes:'備忘',
+  clSecNm:{docs:'證件 & 金錢',device:'3C & 充電',clothes:'衣物',hygiene:'盥洗 & 保養',health:'藥品 & 防中暑',event:'活動物品',misc:'雜項',custom:'自訂'},
+  editH:'✏️ 編輯行程',addH:'＋ 新增行程',mCancel:'取消',mSave:'儲存',mAdd:'新增',
+  atTimePH:'時間（如 14:00）',atTtPH:'標題（必填）',atTdPH:'說明（選填）',
+  clAddPH:'新增物品...',wlFoodPH:'新增餐廳...',wlShopPH:'新增購物...',wlPlacePH:'新增景點...',
+  tl:{
+    d0:[['13:25 TPE Terminal 1','VZ571 — TPE → BKK 出發','泰越捷 Thai VietJet · 桃園 T1<br>手提嚴格限 7 kg · 托運 15 kg','⚠ 手提 7 kg 嚴格執行'],
+        ['16:10 — BKK 素萬那普','抵達曼谷','TDAC 未填者可在排隊時完成<br>移民局 ~40–60 分 · 行李 ~20 分 · 預計離場：~17:45','📱 需填寫 TDAC 數位入境卡'],
+        ['~17:45','前往飯店','方案 A：Grab 直達 ~40–55 分 · THB 400–600<br>方案 B：機場捷運 → Phaya Thai → BTS 到 Siam',''],
+        ['~18:30','Check-in — Siam@Siam Design Hotel','865 Rama I Rd · BTS National Stadium 對面<br>要求：18F+，城市景觀，落地玻璃窗','✓ 步行 10 分鐘可到體育場'],
+        ['19:00 – ~20:30','步行至蘇帕查拉賽體育場','踩點場地，觀察明日入場動線<br>順便看看彩排散場狀況',''],
+        ['20:00 起','與朋友聚餐 💛','朋友 4/4 晚飛回台灣——今晚是最後機會！<br>建議選 Siam / MBK 附近的餐廳','✨ 珍惜這個時光']],
+    d1:[['07:00 – 08:30','飯店早餐','補充能量準備全天戶外行程<br>出門前擦好防曬',''],
+        ['08:30 – 09:10','防中暑準備 + 換上應援服','應援服內穿排汗背心！<br>隨身包：水 ×2 · 電解質包 · 消暑噴霧 · 小毛巾','⚠ 體感溫度可達 40°C+'],
+        ['09:10 出發','前往報到地點','朱拉隆功大學 體育科學學院<br>คณะวิทยาศาสตร์การกีฬา จุฬาลงกรณ์มหาวิทยาลัย','報到時段：09:27 – 12:00'],
+        ['09:27 – 12:00','Channel 3 56th 官方報到','領取：入場票券 · 粉絲區應援物含團服<br>與同好互動拍照','🎉 Channel 3 56 週年'],
+        ['12:00 – 15:30','午餐 + 室內避暑','MBK / Siam Paragon 冷氣房休息<br>約 14:00 補擦防曬','🌡 正午最熱，待室內'],
+        ['15:30 – 18:00','進入蘇帕查拉賽體育場','找好粉絲看台座位<br>補擦防曬 · 補充水分與電解質',''],
+        ['18:00','Channel 3 56th 足球活動開始！🏆','💗 全力應援你的偶像——享受每一刻！','主活動開始'],
+        ['散場後','步行回 Siam@Siam 飯店','人潮眾多難叫車 → 步行約 10 分鐘<br>回飯店補充水分 · 沖涼休息','✓ 不需要搶車！']],
+    d2:[['睡晚一點 → ~09:00','休息 & 悠閒早餐','恢復昨天的體力<br>確認今天的踩點清單和購物目標',''],
+        ['10:00 – 18:00','自由日——購物 & 美食！','一一完成清單上的餐廳和店家<br>MBK · 白金 · Siam · 假日市集 · 恰圖恰','🌡 12–15:00 待室內'],
+        ['18:00 – 20:30','晚餐——就是那間標記很久的！','傍晚氣溫較涼，適合戶外或開放式餐廳',''],
+        ['20:30 – 21:30','整理行李 + 秤重','戰利品塞好 · 托運 ≤15 kg · 手提再確認 7 kg<br>行動電源一定放手提！','⚠ 行動電源 = 手提行李'],
+        ['22:00 – 22:30','Grab 前往 BKK 機場','深夜車少，約 30–40 分<br>目標抵達機場：23:00–23:15','VZ566 01:55 起飛']],
+    d3:[['~23:15（4/5 深夜）','抵達素萬那普機場','辦理 Check-in + 托運行李<br>移民局 + 安全檢查 · 距起飛約 2h40m',''],
+        ['00:00 – 01:30','免稅店最後採購 + 候機','BKK 深夜免稅店仍有開<br>最後機會：零食 · 保養品 · 伴手禮',''],
+        ['01:55 BKK → 06:45 TPE T1','VZ566 — 回家了 🏠','泰越捷 · 06:45 抵達桃園 T1<br>在飛機上好好睡一覺 💤','✓ 回台灣！']]
+  },
+  clItems:{
+    docs:[['護照','確認效期 6 個月以上'],['現金（泰銖 THB）','建議帶 THB 5,000–8,000'],['信用卡','備用'],['eSIM — 已啟用並測試','出發前確認網路正常']],
+    device:[['Samsung Galaxy S24 Ultra','出發前充滿電'],['充電插頭','台灣插頭可直接使用'],['USB-C 充電線',''],['行動電源','⚠️ 必須放手提，不可托運']],
+    clothes:[['短袖上衣 ×3','穿1件帶2件，每天換'],['應援服 / 團服','4/4 活動日穿，內搭排汗背心！'],['褲子 ×2','穿1件帶1件（可重複穿）'],['內衣 ×3','穿1件帶2件'],['免洗內褲 ×4','穿1件帶3件'],['薄外套 / UV 防曬外套','必帶！商場冷氣強，戶外防曬'],['UV 防曬袖套 ×1 雙','4/4 體育場防曬用'],['襪子 ×3 雙','穿1雙帶2雙'],['睡衣',''],['拖鞋','飯店 & 短程外出用',true]],
+    hygiene:[['防曬乳 SPF 50+','4/4 每 2 小時補擦，帶足量！'],['BB 霜',''],['洗面乳','旅行裝 ≤100ml'],['護髮產品','',true],['唇蜜',''],['香水',''],['梳子',''],['毛巾','個人備用'],['牙刷 & 牙膏','飯店不一定提供'],['鯊魚夾 & 瀏海夾','戶外防熱用']],
+    health:[['延經藥','按醫師指示服用'],['口服電解質補充包（ORS）','4/4 必備，台灣藥局先買好'],['止瀉藥','備用'],['退燒 / 止痛藥（普拿疼）',''],['衛生棉','備用保險'],['消暑噴霧','快速降溫用'],['隨身小毛巾','沾水敷頸部降溫']],
+    event:[['應援物資確認','小卡、海報、信等'],['海報筒','',true],['麥克筆','',true],['給偶像的信','',true],['剩餘小卡','',true],['速攻藍莓 🫐','護眼保健',true],['小型側背包','活動當天進場用，雙手空著'],['眼鏡','看台遠眺用']],
+    misc:[['寫生簿','',true]]
+  }
+},
+en:{
+  appName:'Planner J',
+  daysU:' days',nightsU:'',
+  sDays:'Days Left',sNights:'Nights',sPacked:'Packed',
+  warn:'☀️ Bangkok in April: avg 35°C+, feels like 40°C+. Stay hydrated & prep electrolytes for the Apr 4 outdoor event!',
+  wxHint:'TAP TO GET WEATHER',covTxt:'Cover',optLbl:'optional',
+  qItin:'Itinerary',qItin2:'3-night full plan',qPack:'Packing',
+  qWish:'Wish List',qWish2:'Places & shopping',qDocs:'Entry Docs',qDocs2:'Thailand rules',
+  phItin:'🗓 Itinerary',phPack:'🧳 Packing List',phWish:'🛍 Wish List',phDocs:'📋 Entry Docs',phNotes:'📝 Notes',
+  clLbl:'Items packed',
+  d0b:'Arrival',d1b:'Event Day',d2b:'Free Day',d3b:'Departure',
+  addD:['Add to 4/3','Add to 4/4','Add to 4/5','Add to 4/6'],
+  wlFood:'Food & Restaurants',wlShop:'Shopping',wlPlace:'Places to Visit',
+  nbHome:'Home',nbItin:'Plan',nbPack:'Pack',nbWish:'Wish',nbDocs:'Docs',nbNotes:'Notes',
+  clSecNm:{docs:'Docs & Money',device:'Devices & Charging',clothes:'Clothing',hygiene:'Toiletries & Beauty',health:'Meds & Heat Prep',event:'Event Items',misc:'Miscellaneous',custom:'Custom'},
+  editH:'✏️ Edit',addH:'＋ Add Event',mCancel:'Cancel',mSave:'Save',mAdd:'Add',
+  atTimePH:'Time (e.g. 14:00)',atTtPH:'Title (required)',atTdPH:'Description (optional)',
+  clAddPH:'Add item...',wlFoodPH:'Add restaurant...',wlShopPH:'Add item to buy...',wlPlacePH:'Add place...',
+  tl:{
+    d0:[['13:25 TPE Terminal 1','VZ571 — TPE → BKK Depart','Thai VietJet · Terminal 1, Taoyuan<br>Carry-on strictly 7 kg total · Checked 15 kg','⚠ 7 kg carry-on limit — strictly enforced'],
+        ['16:10 — BKK Suvarnabhumi','Arrive Bangkok','Fill TDAC in queue if not done<br>Immigration ~40–60 min · Baggage ~20 min · Est. exit: ~17:45','📱 TDAC digital arrival card required'],
+        ['~17:45','Transfer to Hotel','Option A: Grab direct ~40–55 min · THB 400–600<br>Option B: Airport Rail Link → Phaya Thai BTS → Siam',''],
+        ['~18:30','Check-in — Siam@Siam Design Hotel','865 Rama I Rd · Opp. BTS National Stadium<br>Request: 18F+, city view, floor-to-ceiling windows','✓ 10 min walk to stadium'],
+        ['19:00 – ~20:30','Walk to Suphachalasai Stadium','Scout tomorrow\'s venue & entry route<br>See rehearsal wrap-up',''],
+        ['20:00 onwards','Dinner with Friends 💛','Friends fly back 4/4 — tonight is the last chance!<br>Recommend restaurant near Siam / MBK','✨ Cherish this moment']],
+    d1:[['07:00 – 08:30','Breakfast at Hotel','Load up energy for a full outdoor day<br>Apply sunscreen before going out',''],
+        ['08:30 – 09:10','Heat Prep + Get Dressed','Wear fan jersey (moisture-wicking inner!)<br>Bag: 2 water bottles · electrolytes · cooling spray · towel','⚠ Feels like 40°C+'],
+        ['09:10 depart','Head to Check-in Location','Faculty of Sports Science, Chulalongkorn University<br>คณะวิทยาศาสตร์การกีฬา จุฬาลงกรณ์มหาวิทยาลัย','Check-in: 09:27 – 12:00'],
+        ['09:27 – 12:00','Official Ch.3 56th Check-in','Collect: entry ticket · fan items · team jersey<br>Photo ops with fans','🎉 Channel 3 56th Anniversary'],
+        ['12:00 – 15:30','Lunch + Cool Down Indoors','MBK / Siam Paragon — escape the peak heat<br>Reapply sunscreen around 14:00','🌡 Peak heat 12–15:00, stay inside'],
+        ['15:30 – 18:00','Enter Suphachalasai Stadium','Find your fan stand seat<br>Reapply sunscreen · drink water & electrolytes',''],
+        ['18:00','Channel 3 56th Football Event Begins! 🏆','💗 Cheer your idols — enjoy every single moment!','Main Event Start'],
+        ['After event','Walk Back to Hotel','Crowd = hard to get Grab → walk ~10 min<br>Rehydrate & rest when back','✓ No car needed!']],
+    d2:[['Sleep in → ~09:00','Rest & Late Breakfast','Recover from yesterday<br>Review wish list for today',''],
+        ['10:00 – 18:00','Free Day — Shop & Eat!','Tick off your wish list<br>MBK · Platinum · Siam · Market · Chatuchak','🌡 Stay indoors 12–15:00'],
+        ['18:00 – 20:30','Dinner — The One You\'ve Waited For','Evenings are cooler for outdoor dining',''],
+        ['20:30 – 21:30','Pack Luggage + Weigh Bags','Fit all purchases · checked ≤15 kg · re-verify carry-on 7 kg<br>Power bank must be in carry-on!','⚠ Power bank = carry-on ONLY'],
+        ['22:00 – 22:30','Grab to BKK Airport','Late night = less traffic · ~30–40 min<br>Target arrival: 23:00–23:15','VZ566 departs 01:55']],
+    d3:[['~23:15 (night of 4/5)','Arrive Suvarnabhumi Airport','Check-in + drop baggage<br>Clear immigration + security · ~2h40m before departure',''],
+        ['00:00 – 01:30','Duty Free Last Haul + Wait','BKK duty free open late<br>Last chance: snacks · skincare · souvenirs',''],
+        ['01:55 BKK → 06:45 TPE T1','VZ566 — Homebound 🏠','Thai VietJet · Arrive Taoyuan T1 06:45<br>Sleep on the flight 💤','✓ Home!']]
+  },
+  clItems:{
+    docs:[['Passport','Min. 6 months validity from Apr 3'],['Cash (THB)','Recommend THB 5,000–8,000'],['Credit card','Backup payment'],['eSIM — activated & tested','Confirm data before boarding']],
+    device:[['Samsung Galaxy S24 Ultra','Charge fully before leaving'],['Charging plug','Taiwan plug works in Thailand'],['USB-C charging cable',''],['Power bank','⚠️ Carry-on only — never checked bag']],
+    clothes:[['Short sleeve tops ×3','Wear 1, pack 2 — change daily'],['Fan jersey / team shirt','4/4 — wear moisture-wicking inside!'],['Trousers / shorts ×2','Wear 1, pack 1'],['Bra ×3','Wear 1, pack 2'],['Disposable underwear ×4','Wear 1, pack 3'],['Thin jacket / UV cardigan','Must-have: A/C + sun protection'],['UV arm sleeves ×1 pair','4/4 stadium — blocks UV'],['Socks ×3 pairs','Wear 1, pack 2'],['Pyjamas',''],['Slippers','Hotel & short trips',true]],
+    hygiene:[['Sunscreen SPF 50+','Reapply every 2 hrs on 4/4'],['BB cream',''],['Face wash','Travel size ≤100ml'],['Hair treatment','',true],['Lip gloss',''],['Perfume',''],['Comb / brush',''],['Towel','Personal backup'],['Toothbrush & toothpaste','Hotel may not provide'],['Shark clip & fringe clips','Keep hair off face']],
+    health:[['Period-delay medication','From doctor — follow schedule'],['Oral electrolyte packs (ORS)','4/4 must-have'],['Anti-diarrheal tablets',''],['Paracetamol / fever reducer',''],['Sanitary pads','Backup'],['Cooling spray','Quick relief outdoors'],['Small cooling towel','Soak in water, apply to neck']],
+    event:[['Fan support materials','Cards, poster, letter etc.'],['Poster tube','',true],['Marker pen','',true],['Letter to idol','',true],['Remaining photo cards','',true],['Blueberry eye supplement 🫐','',true],['Small crossbody bag','Hands-free for event day'],['Glasses','For seeing the stage']],
+    misc:[['Sketchbook','',true]]
+  }
+},
+th:{
+  appName:'Planner J',daysU:' วัน',nightsU:' คืน',
+  sDays:'วันที่เหลือ',sNights:'คืน',sPacked:'จัดกระเป๋า',
+  warn:'☀️ เมษายนในกรุงเทพฯ: เฉลี่ย 35°C+ รู้สึกเหมือน 40°C+ ดื่มน้ำบ่อยๆ!',
+  wxHint:'แตะเพื่อดูอากาศ',covTxt:'ปก',optLbl:'เผื่อ',
+  qItin:'แผน',qItin2:'แผน 3 คืน',qPack:'กระเป๋า',qWish:'รายการ',qWish2:'สถานที่และช้อปปิ้ง',qDocs:'เอกสาร',qDocs2:'กฎของไทย',
+  phItin:'🗓 แผนการเดินทาง',phPack:'🧳 รายการของ',phWish:'🛍 สิ่งที่อยากได้',phDocs:'📋 เอกสารเข้าประเทศ',phNotes:'📝 บันทึก',
+  clLbl:'รายการที่จัดแล้ว',d0b:'วันมาถึง',d1b:'วันงาน',d2b:'วันอิสระ',d3b:'วันกลับ',
+  addD:['เพิ่ม 4/3','เพิ่ม 4/4','เพิ่ม 4/5','เพิ่ม 4/6'],
+  wlFood:'ร้านอาหาร',wlShop:'ช้อปปิ้ง',wlPlace:'สถานที่',
+  nbHome:'หน้าแรก',nbItin:'แผน',nbPack:'กระเป๋า',nbWish:'รายการ',nbDocs:'เอกสาร',nbNotes:'บันทึก',
+  clSecNm:{docs:'เอกสาร & เงิน',device:'อุปกรณ์',clothes:'เสื้อผ้า',hygiene:'ของใช้',health:'ยา',event:'ของงาน',misc:'อื่นๆ',custom:'กำหนดเอง'},
+  editH:'✏️ แก้ไข',addH:'＋ เพิ่มกิจกรรม',mCancel:'ยกเลิก',mSave:'บันทึก',mAdd:'เพิ่ม',
+  atTimePH:'เวลา (เช่น 14:00)',atTtPH:'ชื่อ (จำเป็น)',atTdPH:'รายละเอียด (ไม่บังคับ)',
+  clAddPH:'เพิ่มสิ่งของ...',wlFoodPH:'เพิ่มร้านอาหาร...',wlShopPH:'เพิ่มของที่ต้องซื้อ...',wlPlacePH:'เพิ่มสถานที่...',
+  tl:{d0:[],d1:[],d2:[],d3:[]},
+  clItems:{docs:[['หนังสือเดินทาง','อายุใช้งานขั้นต่ำ 6 เดือน'],['เงินสด (THB)','แนะนำ THB 5,000–8,000'],['บัตรเครดิต','สำรอง'],['eSIM','ตรวจสอบก่อนขึ้นเครื่อง']],device:[['Samsung Galaxy S24 Ultra','ชาร์จให้เต็มก่อน'],['หัวชาร์จ',''],['สาย USB-C',''],['พาวเวอร์แบงก์','⚠️ ในกระเป๋าถือเท่านั้น']],clothes:[['เสื้อแขนสั้น ×3',''],['เสื้อแฟนคลับ',''],['กางเกง ×2',''],['ชุดชั้นใน ×3',''],['กางเกงในใช้แล้วทิ้ง ×4',''],['แจ็กเก็ตบาง',''],['ปลอกแขน UV',''],['ถุงเท้า ×3',''],['ชุดนอน',''],['รองเท้าแตะ','',true]],hygiene:[['ครีมกันแดด SPF 50+','ทาซ้ำทุก 2 ชม.'],['บีบีครีม',''],['โฟมล้างหน้า',''],['ทรีทเมนต์ผม','',true],['ลิปกลอส',''],['น้ำหอม',''],['หวี',''],['ผ้าเช็ดตัว',''],['แปรงสีฟัน',''],['กิ๊บผม','']],health:[['ยาเลื่อนประจำเดือน',''],['เกลือแร่ ORS',''],['ยาแก้ท้องเสีย',''],['ยาแก้ปวด',''],['ผ้าอนามัย',''],['สเปรย์คลายร้อน',''],['ผ้าเย็น','']],event:[['ของเชียร์',''],['หลอดโปสเตอร์','',true],['ปากกา','',true],['จดหมาย','',true],['การ์ด','',true],['บลูเบอร์รี่ 🫐','',true],['กระเป๋าสะพาย',''],['แว่นตา','']],misc:[['สมุดวาดรูป','',true]]}
+},
+ja:{
+  appName:'Planner J',daysU:'日',nightsU:'泊',
+  sDays:'出発まで',sNights:'泊',sPacked:'荷造り',
+  warn:'☀️ 4月のバンコク: 平均35°C以上・体感40°C超。4/4に備えて水分と電解質を！',
+  wxHint:'タップして天気を取得',covTxt:'カバー',optLbl:'任意',
+  qItin:'日程',qItin2:'3泊フルプラン',qPack:'荷造り',qWish:'リスト',qWish2:'お店・観光地',qDocs:'入国書類',qDocs2:'タイ入国規定',
+  phItin:'🗓 旅行日程',phPack:'🧳 荷造りリスト',phWish:'🛍 欲しいものリスト',phDocs:'📋 入国書類',phNotes:'📝 メモ',
+  clLbl:'荷造り完了',d0b:'到着日',d1b:'イベント日',d2b:'フリー日',d3b:'帰国日',
+  addD:['4/3に追加','4/4に追加','4/5に追加','4/6に追加'],
+  wlFood:'グルメ',wlShop:'ショッピング',wlPlace:'観光スポット',
+  nbHome:'ホーム',nbItin:'日程',nbPack:'荷造り',nbWish:'リスト',nbDocs:'書類',nbNotes:'メモ',
+  clSecNm:{docs:'書類 & お金',device:'デバイス',clothes:'衣類',hygiene:'洗面用具',health:'薬',event:'イベント用品',misc:'その他',custom:'カスタム'},
+  editH:'✏️ 編集',addH:'＋ 追加',mCancel:'キャンセル',mSave:'保存',mAdd:'追加',
+  atTimePH:'時間（例：14:00）',atTtPH:'タイトル（必須）',atTdPH:'説明（任意）',
+  clAddPH:'アイテムを追加...',wlFoodPH:'レストランを追加...',wlShopPH:'買い物を追加...',wlPlacePH:'場所を追加...',
+  tl:{d0:[],d1:[],d2:[],d3:[]},
+  clItems:{docs:[['パスポート','有効期限6ヶ月以上'],['現金（THB）','5,000〜8,000 THB'],['クレジットカード','予備'],['eSIM','搭乗前に確認']],device:[['Samsung Galaxy S24 Ultra','出発前に満充電'],['充電プラグ',''],['USB-Cケーブル',''],['モバイルバッテリー','⚠️ 機内持ち込みのみ']],clothes:[['半袖 ×3','1着着用・2着持参'],['ファングッズ/チームシャツ','4/4 — 吸汗インナーを着用！'],['ボトムス ×2',''],['ブラ ×3',''],['使い捨て下着 ×4',''],['薄手ジャケット',''],['UVアームカバー',''],['靴下 ×3',''],['パジャマ',''],['スリッパ','',true]],hygiene:[['日焼け止め SPF 50+','2時間ごとに塗り直し'],['BBクリーム',''],['洗顔料','≤100ml'],['ヘアトリートメント','',true],['リップグロス',''],['香水',''],['コーム',''],['タオル',''],['歯ブラシ＆歯磨き粉',''],['ヘアクリップ','']],health:[['月経遅延薬',''],['経口補水塩',''],['下痢止め',''],['解熱鎮痛薬',''],['生理用品',''],['冷却スプレー',''],['冷却タオル','']],event:[['応援グッズ',''],['ポスターチューブ','',true],['マーカーペン','',true],['手紙','',true],['フォトカード','',true],['ブルーベリーサプリ 🫐','',true],['ショルダーバッグ',''],['眼鏡','']],misc:[['スケッチブック','',true]]}
+},
+ko:{
+  appName:'Planner J',daysU:'일',nightsU:'박',
+  sDays:'출발까지',sNights:'박',sPacked:'짐 싸기',
+  warn:'☀️ 4월 방콕: 평균 35°C 이상, 체감 40°C+. 수분·전해질 챙기세요!',
+  wxHint:'탭하여 날씨 확인',covTxt:'커버',optLbl:'선택',
+  qItin:'일정',qItin2:'3박 전체 일정',qPack:'짐싸기',qWish:'위시리스트',qWish2:'장소 & 쇼핑',qDocs:'입국 서류',qDocs2:'태국 입국 규정',
+  phItin:'🗓 여행 일정',phPack:'🧳 짐 목록',phWish:'🛍 위시리스트',phDocs:'📋 입국 서류',phNotes:'📝 메모',
+  clLbl:'완료 항목',d0b:'도착일',d1b:'행사일',d2b:'자유일',d3b:'귀국일',
+  addD:['4/3 추가','4/4 추가','4/5 추가','4/6 추가'],
+  wlFood:'맛집',wlShop:'쇼핑',wlPlace:'방문 장소',
+  nbHome:'홈',nbItin:'일정',nbPack:'짐',nbWish:'위시',nbDocs:'서류',nbNotes:'메모',
+  clSecNm:{docs:'서류 & 돈',device:'기기 & 충전',clothes:'의류',hygiene:'세면도구',health:'약품',event:'행사 용품',misc:'기타',custom:'사용자 정의'},
+  editH:'✏️ 편집',addH:'＋ 추가',mCancel:'취소',mSave:'저장',mAdd:'추가',
+  atTimePH:'시간 (예: 14:00)',atTtPH:'제목 (필수)',atTdPH:'설명 (선택)',
+  clAddPH:'항목 추가...',wlFoodPH:'식당 추가...',wlShopPH:'쇼핑 추가...',wlPlacePH:'장소 추가...',
+  tl:{d0:[],d1:[],d2:[],d3:[]},
+  clItems:{docs:[['여권','유효기간 최소 6개월'],['현금 (THB)','5,000~8,000 THB'],['신용카드','예비'],['eSIM','탑승 전 확인']],device:[['Samsung Galaxy S24 Ultra','출발 전 완충'],['충전 플러그',''],['USB-C 케이블',''],['보조배터리','⚠️ 기내 수하물에만']],clothes:[['반팔 티셔츠 ×3',''],['팬 유니폼/팀 셔츠','4/4 — 흡습 이너 착용!'],['바지 ×2',''],['브라 ×3',''],['일회용 속옷 ×4',''],['얇은 재킷',''],['UV 토시',''],['양말 ×3',''],['잠옷',''],['슬리퍼','',true]],hygiene:[['자외선차단제 SPF 50+','2시간마다 덧바르기'],['BB크림',''],['폼 클렌저',''],['헤어 트리트먼트','',true],['립글로스',''],['향수',''],['빗',''],['타올',''],['칫솔 & 치약',''],['헤어핀','']],health:[['월경 지연제',''],['경구 전해질',''],['지사제',''],['해열진통제',''],['생리대',''],['쿨링 스프레이',''],['쿨링 타올','']],event:[['응원 용품',''],['포스터 튜브','',true],['마커펜','',true],['편지','',true],['포토카드','',true],['블루베리 서플리먼트 🫐','',true],['크로스백',''],['안경','']],misc:[['스케치북','',true]]}
+}
+};
+
+// ══ LANG ══
+var lang=S.g('pj_lang','zh');
+
+function buildSel(id){
+  var el=document.getElementById(id); if(!el) return;
+  el.innerHTML='';
+  LANGS.forEach(function(l){
+    var o=document.createElement('option');
+    o.value=l.c; o.textContent=l.f+' '+l.l;
+    if(l.c===lang) o.selected=true;
+    el.appendChild(o);
+  });
+}
+
+function setLang(l){
+  lang=l; S.s('pj_lang',l);
+  ['home','itin','pack','wish','docs','notes'].forEach(function(id){buildSel('ls-'+id);});
+  var t=TX[l];
+  function set(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  // app name
+  set('ld-nm',t.appName); document.title=t.appName;
+  // home
+  set('days-u',t.daysU); set('nights-u',t.nightsU);
+  set('s-days',t.sDays); set('s-nights',t.sNights); set('s-packed',t.sPacked);
+  set('h-warn',t.warn); set('wx-hint',t.wxHint);
+  set('q-itin',t.qItin); set('q-itin2',t.qItin2); set('q-pack',t.qPack);
+  set('q-wish',t.qWish); set('q-wish2',t.qWish2); set('q-docs',t.qDocs); set('q-docs2',t.qDocs2);
+  // photo buttons
+  ['h','itin','pack','wish','docs','notes'].forEach(function(p){set(p+'-covtxt',t.covTxt);});
+  // page headers
+  set('ph-itin',t.phItin); set('ph-pack',t.phPack); set('ph-wish',t.phWish);
+  set('ph-docs',t.phDocs); set('ph-notes',t.phNotes);
+  // checklist
+  set('cl-lbl',t.clLbl);
+  // day tabs
+  set('d0b',t.d0b); set('d1b',t.d1b); set('d2b',t.d2b); set('d3b',t.d3b);
+  // add buttons
+  for(var i=0;i<4;i++) set('add-d'+i,t.addD[i]);
+  // wishlist titles
+  set('wl-food-t',t.wlFood); set('wl-shop-t',t.wlShop); set('wl-place-t',t.wlPlace);
+  // nav
+  set('nb-home',t.nbHome); set('nb-itin',t.nbItin); set('nb-pack',t.nbPack);
+  set('nb-wish',t.nbWish); set('nb-docs',t.nbDocs); set('nb-notes',t.nbNotes);
+  // modal labels
+  set('m-edit-h',t.editH); set('m-cancel',t.mCancel); set('m-save',t.mSave);
+  set('m-add-h',t.addH); set('at-cancel',t.mCancel); set('at-save',t.mAdd);
+  var ati=document.getElementById('at-time'); if(ati) ati.placeholder=t.atTimePH;
+  var att=document.getElementById('at-tt'); if(att) att.placeholder=t.atTtPH;
+  var atd=document.getElementById('at-td'); if(atd) atd.placeholder=t.atTdPH;
+  var cli=document.getElementById('cl-inp'); if(cli) cli.placeholder=t.clAddPH;
+  var wfi=document.getElementById('wf-inp'); if(wfi) wfi.placeholder=t.wlFoodPH;
+  var wsi=document.getElementById('ws-inp'); if(wsi) wsi.placeholder=t.wlShopPH;
+  var wpi=document.getElementById('wp-inp'); if(wpi) wpi.placeholder=t.wlPlacePH;
+  // render translated timeline
+  renderTL(l);
+  // render checklist in language
+  renderCL();
+  updatePackDisplay();
+}
+
+// ══ ITINERARY RENDER ══
+var TLDOTS=['c','c','c','a','a','d','d','c','c','c','b','b','a','b','b','b','a','d','a','d','d','e','c','c','a','c'];
+var tlidx=0;
+function getDot(day,idx){
+  var dots={
+    d0:['c','c','c','a','a','d'],
+    d1:['d','e','b','b','a','b','b','a'],
+    d2:['d','a','d','e','c'],
+    d3:['c','a','c']
+  };
+  return (dots[day]&&dots[day][idx])||'a';
+}
+
+function renderTL(l){
+  var t=TX[l];
+  var days=['d0','d1','d2','d3'];
+  days.forEach(function(day,di){
+    var rows=t.tl[day];
+    if(!rows||rows.length===0) return; // non-zh/en langs use HTML as-is
+    var container=document.getElementById('day-'+di);
+    if(!container) return;
+    // update existing tl items
+    rows.forEach(function(row,ri){
+      var tlt=container.querySelector('[data-i="tlt-'+day+'-'+ri+'"]');
+      var tt=container.querySelector('[data-i="tt-'+day+'-'+ri+'"]');
+      var td=container.querySelector('[data-i="td-'+day+'-'+ri+'"]');
+      var tg=container.querySelector('[data-i="tg-'+day+'-'+ri+'"]');
+      if(tlt) tlt.textContent=row[0];
+      if(tt) tt.textContent=row[1];
+      if(td) td.innerHTML=row[2];
+      if(tg){tg.textContent=row[3]; tg.style.display=row[3]?'':'none';}
+    });
+    // update add button
+    var addSpan=container.querySelector('[data-i="add-d'+di+'"]');
+    if(addSpan) addSpan.textContent=t.addD[di];
+  });
+}
+
+// ══ NAVIGATION ══
+function goPage(name){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.nb').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('pg-'+name).classList.add('on');
+  var nb=document.getElementById('nav-'+name); if(nb) nb.classList.add('on');
+  window.scrollTo(0,0);
+  // fix dtabs sticky top after page switch
+  if(name==='itinerary') fixDtabsTop();
+}
+
+function fixDtabsTop(){
+  var hero=document.getElementById('itin-hero');
+  var tabs=document.getElementById('dtabs');
+  if(hero&&tabs){
+    tabs.style.top=hero.offsetHeight+'px';
+  }
+}
+
+function showDay(i,el){
+  document.querySelectorAll('.dtab').forEach(function(t){t.classList.remove('on');});
+  document.querySelectorAll('.dayc').forEach(function(d){d.classList.remove('on');});
+  el.classList.add('on');
+  document.getElementById('day-'+i).classList.add('on');
+}
+
+// ══ WEATHER ══
+var WXC={0:'☀️ Clear',1:'🌤 Mostly Clear',2:'⛅ Partly Cloudy',3:'☁️ Overcast',45:'🌫 Foggy',51:'🌦 Drizzle',61:'🌧 Rain',63:'🌧 Rain',80:'🌦 Showers',95:'⛈ Thunderstorm'};
+var WXE={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',51:'🌦',61:'🌧',80:'🌦',95:'⛈'};
+var wxBusy=false;
+function loadWx(){
+  if(wxBusy) return; wxBusy=true;
+  document.getElementById('wx-in').innerHTML='<div class="wx-loading">📍 Locating...</div>';
+  if(!navigator.geolocation){showWxFail('Not supported');return;}
+  navigator.geolocation.getCurrentPosition(async function(pos){
+    try{
+      var lat=pos.coords.latitude,lon=pos.coords.longitude;
+      var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,uv_index&timezone=auto');
+      var d=await r.json(); var c=d.current;
+      var loc='Current Location';
+      try{
+        var gr=await fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&accept-language=en');
+        var gd=await gr.json();
+        loc=gd.address&&(gd.address.city||gd.address.town||gd.address.suburb)||loc;
+      }catch(e){}
+      var code=c.weather_code;
+      document.getElementById('wx-em').textContent=WXE[code]||'🌤';
+      document.getElementById('wx-in').innerHTML=
+        '<div class="wx-loc">📍 '+loc+'</div>'+
+        '<div class="wx-temp">'+Math.round(c.temperature_2m)+'°C</div>'+
+        '<div class="wx-desc">'+(WXC[code]||'Weather')+'</div>'+
+        '<div class="wx-row">'+
+          '<div class="wx-st">Humidity <b>'+c.relative_humidity_2m+'%</b></div>'+
+          '<div class="wx-st">Feels <b>'+Math.round(c.apparent_temperature)+'°C</b></div>'+
+          '<div class="wx-st">UV <b>'+(c.uv_index!==undefined?c.uv_index:'—')+'</b></div>'+
+        '</div>';
+      wxBusy=false;
+    }catch(e){showWxFail('Failed to load');}
+  },function(){showWxFail('Location denied');});
+}
+function showWxFail(m){
+  document.getElementById('wx-in').innerHTML='<div class="wx-loc">📍 —</div><div class="wx-hint">'+m+'</div>';
+  wxBusy=false;
+}
+
+// ══ PHOTO UPLOAD ══
+function setBg(id,inp){
+  var f=inp.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    var el=document.getElementById(id);
+    if(!el) return;
+    el.style.backgroundImage='url('+ev.target.result+')';
+    el.classList.add('on');
+    var hero=el.closest('.phero');
+    if(hero){
+      var ov=hero.querySelector('.phero-ov'); if(ov) ov.style.display='block';
+      if(id==='itin-bg') fixDtabsTop();
+    }
+    inp.value='';
+  };
+  r.readAsDataURL(f);
+}
+function setQcBg(i,inp){
+  var f=inp.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    var el=document.getElementById('qc-bg'+i);
+    if(!el) return;
+    el.style.backgroundImage='url('+ev.target.result+')';
+    el.classList.add('on');
+    inp.value='';
+  };
+  r.readAsDataURL(f);
+}
+
+// ══ CHECKLIST ══
+var CLD_KEYS=['docs','device','clothes','hygiene','health','event','misc'];
+var CLD_ICONS={docs:'🪪',device:'📱',clothes:'👕',hygiene:'🧴',health:'💊',event:'🎉',misc:'🎒',custom:'➕'};
+var CLD_OPT={clothes:[9],hygiene:[3],event:[1,2,3,4,5],misc:[0]};
+var chk=S.g('pj_chk',{});
+
+function renderCL(){
+  var con=document.getElementById('cl-con'); if(!con) return;
+  con.innerHTML='';
+  var t=TX[lang];
+  var custom=S.g('pj_custom',[]);
+  var keys=CLD_KEYS.slice();
+  if(custom.length) keys.push('custom');
+  var tot=0,done=0;
+  keys.forEach(function(sid){
+    var items=sid==='custom'?custom.map(function(l){return[l,''];}):t.clItems[sid];
+    if(!items) return;
+    var optIdx=CLD_OPT[sid]||[];
+    var secNm=(t.clSecNm&&t.clSecNm[sid])||sid;
+    var secDone=items.filter(function(it,i){return chk[sid+'_'+i];}).length;
+    tot+=items.length; done+=secDone;
+    var pct=items.length?Math.round(secDone/items.length*100):0;
+    var el=document.createElement('div'); el.className='cls'; el.dataset.sid=sid;
+    el.innerHTML=
+      '<div class="cls-h" onclick="togCLSec(\''+sid+'\')">'+
+        '<div class="cls-l"><div class="cls-ic">'+(CLD_ICONS[sid]||'📦')+'</div><div class="cls-nm">'+secNm+'</div></div>'+
+        '<div class="cls-r"><div class="cls-pg">'+secDone+'/'+items.length+'</div><div class="cls-ch" id="clch-'+sid+'">›</div></div>'+
+      '</div>'+
+      '<div class="cls-bar"><div class="cls-bfill" id="clsb-'+sid+'" style="width:'+pct+'%"></div></div>'+
+      '<div class="cl-its" id="clit-'+sid+'">'+
+        items.map(function(it,i){
+          var ck=!!chk[sid+'_'+i];
+          var isOpt=optIdx.indexOf(i)>=0||(it[2]===true);
+          return '<div class="ci'+(ck?' ck':'')+'" onclick="togCI(\''+sid+'\','+i+',this)" oncontextmenu="delCI(event,\''+sid+'\','+i+')">'+
+            '<div class="ci-box"></div>'+
+            '<div><div class="ci-lbl">'+it[0]+(isOpt?'<span class="opt-t">'+t.optLbl+'</span>':'')+'</div>'+(it[1]?'<div class="ci-note">'+it[1]+'</div>':'')+
+            '</div></div>';
+        }).join('')+
+      '</div>';
+    con.appendChild(el);
+  });
+  document.getElementById('ck-done').textContent=done;
+  document.getElementById('ck-total').textContent=tot;
+  var pctT=tot?Math.round(done/tot*100):0;
+  document.getElementById('ck-bar').style.width=pctT+'%';
+  updatePackDisplay(done,tot);
+}
+
+function togCLSec(sid){
+  var its=document.getElementById('clit-'+sid);
+  var ch=document.getElementById('clch-'+sid);
+  if(its) its.classList.toggle('op');
+  if(ch) ch.classList.toggle('op');
+}
+function togCI(sid,idx,el){
+  var key=sid+'_'+idx; chk[key]=!chk[key]; S.s('pj_chk',chk);
+  el.classList.toggle('ck');
+  var items=el.closest('.cl-its').querySelectorAll('.ci');
+  var d=el.closest('.cl-its').querySelectorAll('.ci.ck').length;
+  var sec=el.closest('.cls');
+  sec.querySelector('.cls-pg').textContent=d+'/'+items.length;
+  document.getElementById('clsb-'+sid).style.width=Math.round(d/items.length*100)+'%';
+  var allI=document.querySelectorAll('#cl-con .ci');
+  var allD=document.querySelectorAll('#cl-con .ci.ck').length;
+  document.getElementById('ck-done').textContent=allD;
+  document.getElementById('ck-total').textContent=allI.length;
+  document.getElementById('ck-bar').style.width=(allI.length?Math.round(allD/allI.length*100):0)+'%';
+  updatePackDisplay(allD,allI.length);
+}
+function delCI(e,sid,idx){
+  e.preventDefault();
+  var t=TX[lang];
+  var items=sid==='custom'?S.g('pj_custom',[]):t.clItems[sid];
+  if(!items) return;
+  var lbl=items[idx]?items[idx][0]:'item';
+  if(!confirm('Delete "'+lbl+'"?')) return;
+  delete chk[sid+'_'+idx]; S.s('pj_chk',chk);
+  if(sid==='custom'){var c=S.g('pj_custom',[]);c.splice(idx,1);S.s('pj_custom',c);}
+  renderCL();
+}
+function addCI(){
+  var inp=document.getElementById('cl-inp'); var val=inp.value.trim(); if(!val) return;
+  var c=S.g('pj_custom',[]); c.push(val); S.s('pj_custom',c);
+  inp.value=''; renderCL();
+  var s=document.getElementById('clit-custom'); if(s&&!s.classList.contains('op')) togCLSec('custom');
+}
+function updatePackDisplay(d,t){
+  if(d===undefined) d=parseInt(document.getElementById('ck-done').textContent)||0;
+  if(t===undefined) t=parseInt(document.getElementById('ck-total').textContent)||0;
+  var pct=t?Math.round(d/t*100):0;
+  document.getElementById('pack-pct').textContent=pct+'%';
+  document.getElementById('pack-sub').textContent=d+'/'+t+' '+(TX[lang].clLbl||'packed');
+}
+
+// ══ WISHLIST ══
+var WL_DEF={food:[['（新增你想去的餐廳）','']],shop:[['Eveandboy / Watsons 保養品','']],place:[['蘇帕查拉賽國立體育場','4/4 活動場地']]};
+function getWl(k){return S.g('pj_wl_'+k,WL_DEF[k]||[]);}
+function saveWl(k,a){S.s('pj_wl_'+k,a);}
+function renderWl(k){
+  var el=document.getElementById('wl-'+k); if(!el) return;
+  el.innerHTML=getWl(k).map(function(it,i){
+    return '<div class="wl-i'+(it[2]?' dn':'')+'" onclick="togWl(\''+k+'\','+i+')">'+
+      '<div class="wl-ck"></div>'+
+      '<div><div class="wl-tx">'+it[0]+'</div>'+(it[1]?'<div class="wl-nt">'+it[1]+'</div>':'')+
+      '</div></div>';
+  }).join('');
+}
+function togWl(k,i){var a=getWl(k);a[i][2]=!a[i][2];saveWl(k,a);renderWl(k);}
+function addWl(k,inId){
+  var inp=document.getElementById(inId); var val=inp.value.trim(); if(!val) return;
+  var a=getWl(k); a.push([val,'',false]); saveWl(k,a); inp.value=''; renderWl(k);
+}
+
+// ══ DOCS ══
+function togDoc(hdr){
+  var body=hdr.nextElementSibling;
+  var chev=hdr.querySelector('.doc-hc');
+  body.classList.toggle('op'); chev.classList.toggle('op');
+}
+
+// ══ NOTES ══
+function togNote(btn){
+  var card=btn.closest('.nt-c');
+  var tx=card.querySelector('.nt-tx'); var ta=card.querySelector('.nt-ta');
+  if(ta.style.display==='block'){
+    tx.textContent=ta.value; tx.style.display='block'; ta.style.display='none'; btn.textContent='✏️';
+  }else{
+    ta.value=tx.textContent; tx.style.display='none'; ta.style.display='block'; ta.focus(); btn.textContent='✓';
+  }
+}
+function saveNote(k){var ta=document.getElementById('nt-'+k+'-ta');if(!ta)return;S.s('pj_note_'+k,ta.value);}
+
+// ══ EDIT / ADD TIMELINE ══
+var curCard=null;
+function editTl(card){
+  curCard=card;
+  document.getElementById('m-tt').value=card.querySelector('.tltt')?card.querySelector('.tltt').textContent:'';
+  document.getElementById('m-td').value=card.querySelector('.tld')?card.querySelector('.tld').innerHTML.replace(/<br>/g,'\n'):'';
+  openM('m-edit');
+}
+function saveEdit(){
+  if(!curCard) return;
+  var tt=document.getElementById('m-tt').value.trim();
+  var td=document.getElementById('m-td').value.trim().replace(/\n/g,'<br>');
+  if(curCard.querySelector('.tltt')) curCard.querySelector('.tltt').textContent=tt;
+  if(curCard.querySelector('.tld')) curCard.querySelector('.tld').innerHTML=td;
+  closeM('m-edit');
+}
+var addDay=0;
+function openAdd(d){
+  addDay=d;
+  document.getElementById('m-add-h').textContent='＋ '+TX[lang].addD[d];
+  document.getElementById('at-time').value='';
+  document.getElementById('at-tt').value='';
+  document.getElementById('at-td').value='';
+  openM('m-add');
+}
+function saveAdd(){
+  var time=document.getElementById('at-time').value.trim();
+  var em=document.getElementById('at-em').value;
+  var tt=document.getElementById('at-tt').value.trim();
+  var td=document.getElementById('at-td').value.trim().replace(/\n/g,'<br>');
+  if(!tt){alert(TX[lang].atTtPH);return;}
+  var container=document.getElementById('extra-'+addDay);
+  var div=document.createElement('div'); div.className='tli';
+  div.innerHTML='<div class="tldot a">'+em+'</div><div class="tlb">'+(time?'<div class="tlt">'+time+'</div>':'')+
+    '<div class="tlcard" onclick="editTl(this)"><div class="tltt">'+tt+'</div>'+(td?'<div class="tld">'+td+'</div>':'')+
+    '</div></div>';
+  container.appendChild(div);
+  closeM('m-add');
+}
+
+function openM(id){document.getElementById(id).classList.add('op');}
+function closeM(id){document.getElementById(id).classList.remove('op');}
+document.querySelectorAll('.mover').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('op');});
+});
+
+// ══ COUNTDOWN ══
+function updateCD(){
+  var diff=new Date('2026-04-03T13:25:00+08:00')-new Date();
+  document.getElementById('days-n').textContent=diff>0?Math.floor(diff/86400000):0;
+}
+
+// ══ INIT ══
+window.addEventListener('load',function(){
+  setTimeout(function(){document.getElementById('ld-fill').style.width='100%';},50);
+  setTimeout(function(){
+    var l=document.getElementById('ld');
+    l.classList.add('hide');
+    setTimeout(function(){l.style.display='none';},380);
+  },1500);
+
+  ['home','itin','pack','wish','docs','notes'].forEach(function(id){buildSel('ls-'+id);});
+  setLang(lang);
+  updateCD();
+  ['food','shop','place'].forEach(function(k){renderWl(k);});
+
+  ['hotel','flight','event','health','free'].forEach(function(k){
+    var saved=S.g('pj_note_'+k,null);
+    if(saved){
+      var el=document.getElementById('nt-'+k);
+      var ta=document.getElementById('nt-'+k+'-ta');
+      if(el) el.textContent=saved;
+      if(ta) ta.value=saved;
+    }
+  });
+
+  setTimeout(fixDtabsTop,100);
+  window.addEventListener('resize',fixDtabsTop);
+});
+</script>
+</body>
+</html>
